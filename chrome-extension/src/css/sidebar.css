@@ -1,0 +1,262 @@
+/**
+ * Sidebar CSS - 只在 iframe 內部使用
+ * 由 sidebar.html 中的 <link rel="stylesheet"> 加載
+ * 不會影響外層頁面！
+ */
+
+/* ===== iframe 內部重置 ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ✅ 只重置 iframe 內部的 html/body，外層頁面不受影響 */
+:host, :root {
+  width: 100%;
+  height: 100%;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ===== 主容器 (iframe 內部) ===== */
+#aiAssistantSidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background: white;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  padding: 0;
+  margin: 0;
+  border: 1px solid #e0e0e0;
+  pointer-events: auto !important;
+}
+
+/* ===== 頭部 ===== */
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  user-select: none;
+}
+
+.sidebar-header h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.close-btn:hover {
+  transform: scale(1.1);
+}
+
+/* ===== 聊天區域 ===== */
+.chat-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: white;
+}
+
+.chat-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-area::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+
+.chat-area::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+/* ===== 聊天訊息 ===== */
+.chat-message {
+  display: flex;
+  gap: 8px;
+  animation: messageSlideIn 0.3s ease-out;
+  flex-shrink: 0;
+}
+
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chat-message.user {
+  justify-content: flex-end;
+}
+
+.chat-message.user .message-bubble {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px 12px 4px 12px;
+}
+
+.chat-message.ai {
+  justify-content: flex-start;
+}
+
+.chat-message.ai .message-bubble {
+  background: #f0f0f0;
+  color: #333;
+  border-radius: 12px 12px 12px 4px;
+}
+
+.message-bubble {
+  max-width: 80%;
+  padding: 10px 14px;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  font-size: 13px;
+  line-height: 1.5;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== 加載區域 ===== */
+.loading-area {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.loading-area:not(.hidden) {
+  display: flex;
+}
+
+.loading-area.hidden {
+  display: none !important;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 3px solid #f0f0f0;
+  border-top: 3px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-area p {
+  margin: 0;
+  color: #999;
+  font-size: 12px;
+}
+
+/* ===== 輸入區域 ===== */
+.input-area {
+  flex-shrink: 0;
+  padding: 12px 16px;
+  background: white;
+  border-top: 1px solid #e0e0e0;
+}
+
+.input-container {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.question-input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 20px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.question-input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.question-input::placeholder {
+  color: #999;
+}
+
+.send-btn {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.send-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.send-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.char-count {
+  font-size: 11px;
+  color: #999;
+  text-align: right;
+  margin: 0;
+  padding: 0;
+}

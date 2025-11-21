@@ -1,0 +1,32 @@
+/**
+ * Content Script CSS
+ * 只定義頁面上 iframe 容器的樣式
+ * 不影響頁面本身的滾動！
+ */
+
+/* ✅ 只針對 iframe 容器，不觸及 html/body */
+#aiAssistantContainer {
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 500px;
+  height: 60vh;
+  z-index: 2147483647;
+  pointer-events: auto;
+  box-shadow: -2px 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* iframe 本身 */
+#aiAssistantFrame {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-left: 2px solid #e0e0e0;
+  border-bottom: 2px solid #e0e0e0;
+  background: white;
+  border-radius: 0 0 0 8px;
+  pointer-events: auto;
+}

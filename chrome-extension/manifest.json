@@ -1,0 +1,47 @@
+{
+  "manifest_version": 3,
+  "name": "校務系統AI助手",
+  "version": "1.0.0",
+  "description": "基於AI的校務系統智能助手，幫助師生解決系統相關問題",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "tabs",
+    "tabCapture"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "src/js/background.js"
+  },
+  "action": {
+    "default_title": "校務系統AI助手"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; style-src 'self' 'unsafe-inline'"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["src/html/sidebar.html"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/js/content.js"],
+      "css": ["src/css/content.css"]
+    }
+  ],
+  "commands": {
+    "toggle-sidebar": {
+      "suggested_key": {
+        "default": "Alt+A",
+        "mac": "Command+Shift+A"
+      },
+      "description": "開啟/關閉 AI 助手側邊欄"
+    }
+  }
+}

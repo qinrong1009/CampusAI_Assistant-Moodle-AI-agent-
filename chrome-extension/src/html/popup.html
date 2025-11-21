@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>校務系統AI助手</title>
+  <link rel="stylesheet" href="../css/popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <div class="header">
+      <h1>校務系統AI助手</h1>
+      <button id="settingsBtn" class="settings-btn" title="設定">⚙️</button>
+    </div>
+    
+    <div class="content">
+      <button id="activateBtn" class="primary-btn">
+        啟動助手 (按 Alt+A)
+      </button>
+      <p class="info-text">點擊按鈕在當前頁面啟動AI助手面板</p>
+    </div>
+
+    <div id="settingsPanel" class="settings-panel hidden">
+      <h2>設定</h2>
+      <div class="setting-item">
+        <label for="apiUrl">API 網址:</label>
+        <input type="text" id="apiUrl" placeholder="http://localhost:5000">
+      </div>
+      <div class="setting-item">
+        <label for="modelType">AI 模型:</label>
+        <select id="modelType">
+          <optgroup label="本地模型 (推薦)">
+            <option value="llava">🖥️ LLaVA (視覺模型)</option>
+            <option value="qwen2.5">🖥️ Qwen 2.5 (多功能)</option>
+            <option value="bakllava">🖥️ BakLLaVA (輕量)</option>
+          </optgroup>
+          <optgroup label="雲端模型 (需要 API 密鑰)">
+            <option value="gpt">☁️ GPT-4V</option>
+            <option value="claude">☁️ Claude 3 Vision</option>
+          </optgroup>
+        </select>
+        <small style="color: #666; margin-top: 5px; display: block;">
+          本地模型無需 API 密鑰 · 完全隱私 · 完全本地運行
+        </small>
+      </div>
+      <button id="saveSettingsBtn" class="primary-btn">保存設定</button>
+    </div>
+  </div>
+
+  <script src="../js/popup.js"></script>
+</body>
+</html>
