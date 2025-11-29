@@ -14,7 +14,7 @@ def check_ollama_service():
     """檢查 Ollama 服務是否運行"""
     print("🔍 檢查 Ollama 服務...")
     
-    ollama_url = "http://localhost:11434"
+    ollama_url = "https://primehub.aic.ncku.edu.tw/console/apps/ollama-0-13-0-i1oyy"
     
     try:
         response = requests.get(f"{ollama_url}/api/tags", timeout=5)
@@ -44,7 +44,7 @@ def check_vision_models():
     """檢查是否安裝了視覺模型"""
     print("\n🔍 檢查視覺模型...")
     
-    ollama_url = "http://localhost:11434"
+    ollama_url = "https://primehub.aic.ncku.edu.tw/console/apps/ollama-0-13-0-i1oyy"
     
     try:
         response = requests.get(f"{ollama_url}/api/tags", timeout=5)
@@ -77,7 +77,7 @@ def test_generation():
     """測試 API 調用"""
     print("\n🧪 測試 API 調用...")
     
-    ollama_url = "http://localhost:11434"
+    ollama_url = "https://primehub.aic.ncku.edu.tw/console/apps/ollama-0-13-0-i1oyy"
     
     try:
         # 簡單文本生成測試

@@ -176,6 +176,58 @@
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
+/* ===== Model select row (improved UI) ===== */
+.model-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.model-select-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.model-select-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.model-select {
+  -webkit-appearance: none;
+  appearance: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: white;
+  font-size: 13px;
+  min-width: 0;
+  flex: 1;
+}
+
+.apply-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.apply-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(118, 75, 162, 0.18);
+}
+
+.hint-text {
+  color: #666;
+  font-size: 12px;
+}
+
 /* ===== 輸入列 ===== */
 .chat-input-bar {
   flex-shrink: 0;

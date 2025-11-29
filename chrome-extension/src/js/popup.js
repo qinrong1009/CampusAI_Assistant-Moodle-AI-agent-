@@ -27,16 +27,34 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // 保存設定
+  // 保存設定（改為友好提示並讓按鈕在請求時鎖定）
   saveSettingsBtn.addEventListener("click", () => {
     const apiUrl = apiUrlInput.value.trim() || "http://localhost:5000";
     const modelType = modelTypeSelect.value;
 
-    chrome.storage.sync.set({
-      apiUrl: apiUrl,
-      modelType: modelType
-    }, () => {
-      alert("設定已保存！");
-      settingsPanel.classList.add("hidden");
+    saveSettingsBtn.disabled = true;
+    saveSettingsBtn.textContent = '儲存中...';
+
+    // 先嘗試透過 background 呼叫 /api/set_model，如果成功，再保存到 storage
+    chrome.runtime.sendMessage({ action: 'setModel', model: modelType }, (resp) => {
+      chrome.storage.sync.set({ apiUrl: apiUrl, modelType: modelType }, () => {
+        if (resp && resp.success) {
+          // 輕量提示
+          saveSettingsBtn.textContent = '已保存';
+          setTimeout(() => {
+            saveSettingsBtn.textContent = '保存';
+            saveSettingsBtn.disabled = false;
+            settingsPanel.classList.add("hidden");
+          }, 800);
+        } else {
+          saveSettingsBtn.textContent = '已保存 (本地)';
+          setTimeout(() => {
+            saveSettingsBtn.textContent = '保存';
+            saveSettingsBtn.disabled = false;
+            settingsPanel.classList.add("hidden");
+          }, 1200);
+        }
+      });
     });
   });
 

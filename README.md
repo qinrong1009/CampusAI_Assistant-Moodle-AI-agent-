@@ -258,33 +258,6 @@ Production 建議：Nginx 反向代理、HTTPS、日誌輪替、加監控。
 | 模型列表空 | `OLLAMA_ENABLED=true`? 模型已 pull? |
 | 擴展不載入 | chrome://extensions 是否正確路徑 |
 
----
-
-## 14. 貢獻與授權
-
-貢獻流程：
-1. Fork 專案  
-2. 建立分支：`git checkout -b feature/xxx`  
-3. Commit：`git commit -m 'feat: xxx'`  
-4. Push：`git push origin feature/xxx`  
-5. 建立 Pull Request  
-
-License：MIT（可商用 / 修改，保留原始版權宣告）
-
----
-
-## 15. 延伸建議
-
-| 類別 | 建議 |
-|------|------|
-| 檢索 | 換向量（Faiss / Milvus / PgVector）|
-| 安全 | JWT、API Key、Rate Limit、RBAC |
-| 對話 | 多輪記憶 + 歷史壓縮 |
-| 監控 | Prometheus 指標 + Grafana 儀表 |
-| 前端 | 回應高亮 / 追問 / 錯誤提示 |
-| 模型 | 語音轉文字 (Whisper) + OCR |
-| 部署 | Helm / K8s 水平擴展 |
-
 
 ---
 

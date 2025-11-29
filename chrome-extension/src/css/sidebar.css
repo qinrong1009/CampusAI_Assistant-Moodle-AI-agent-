@@ -72,6 +72,48 @@ html, body {
   transform: scale(1.1);
 }
 
+/* ===== Model inline controls ===== */
+.header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.model-inline {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.model-select-small {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: none;
+  font-size: 13px;
+  background: rgba(255,255,255,0.95);
+  color: #333;
+}
+
+.small-btn {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: none;
+  font-size: 13px;
+  cursor: pointer;
+  background: rgba(255,255,255,0.15);
+  color: white;
+}
+
+.apply-small {
+  background: linear-gradient(135deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.06) 100%);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+.small-btn:hover {
+  transform: translateY(-2px);
+}
+
 /* ===== 聊天區域 ===== */
 .chat-area {
   flex: 1;

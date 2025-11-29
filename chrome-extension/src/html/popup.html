@@ -26,24 +26,24 @@
         <label for="apiUrl">API 網址:</label>
         <input type="text" id="apiUrl" placeholder="http://localhost:5000">
       </div>
-      <div class="setting-item">
-        <label for="modelType">AI 模型:</label>
-        <select id="modelType">
-          <optgroup label="本地模型 (推薦)">
-            <option value="llava">🖥️ LLaVA (視覺模型)</option>
-            <option value="qwen2.5">🖥️ Qwen 2.5 (多功能)</option>
-            <option value="bakllava">🖥️ BakLLaVA (輕量)</option>
-          </optgroup>
-          <optgroup label="雲端模型 (需要 API 密鑰)">
-            <option value="gpt">☁️ GPT-4V</option>
-            <option value="claude">☁️ Claude 3 Vision</option>
-          </optgroup>
-        </select>
-        <small style="color: #666; margin-top: 5px; display: block;">
-          本地模型無需 API 密鑰 · 完全隱私 · 完全本地運行
-        </small>
+
+      <div class="setting-item model-row">
+        <div class="model-select-wrapper">
+          <label for="modelType">AI 模型:</label>
+          <div class="model-select-row">
+            <select id="modelType" class="model-select">
+              <option value="qwen2.5vl">Qwen 2.5VL</option>
+              <option value="llava">LLaVA</option>
+              <option value="llama3.2">LLaMA 3.2</option>
+              <option value="qwen3-vl">Qwen 3 VL</option>
+              <option value="gemma3">Gemma 3</option>
+              <option value="llama4">LLaMA 4</option>
+            </select>
+            <button id="saveSettingsBtn" class="apply-btn">保存</button>
+          </div>
+        </div>
+        <small class="hint-text">使用遠端 Ollama 服務上的模型，僅提供系統管理允許的選項。</small>
       </div>
-      <button id="saveSettingsBtn" class="primary-btn">保存設定</button>
     </div>
   </div>
 

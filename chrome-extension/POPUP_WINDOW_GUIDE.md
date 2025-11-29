@@ -111,10 +111,6 @@ chrome://extensions/ → 背景頁 → Console
 
 ### 問題 3: API 連接失敗
 **檢查清單:**
-- [ ] Flask 後端是否運行在 http://localhost:5001
-- [ ] Ollama 是否已啟動
-- [ ] 模型是否已下載（qwen2.5vl:7b）
-
 ---
 
 ## 🎨 未來可改進的地方

@@ -10,7 +10,15 @@
   <div id="aiAssistantSidebar" class="ai-sidebar">
     <div class="sidebar-header">
       <h2>校務系統 AI 助手</h2>
-      <button id="closeSidebarBtn" class="close-btn">✕</button>
+      <div class="header-actions">
+        <div class="model-inline">
+          <select id="sidebarModelSelect" title="選擇模型" class="model-select-small">
+            <option value="default">使用伺服器預設</option>
+          </select>
+          <button id="setModelBtn" class="small-btn apply-small">套用模型</button>
+        </div>
+        <button id="closeSidebarBtn" class="close-btn">✕</button>
+      </div>
     </div>
 
     <!-- 聊天區域 -->
