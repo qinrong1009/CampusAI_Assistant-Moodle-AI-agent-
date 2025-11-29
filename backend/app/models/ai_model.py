@@ -21,8 +21,9 @@ class AIModel:
     
     def __init__(self):
         """初始化 AI 模型"""
-        # 本地 Ollama 配置
-        self.ollama_url = os.getenv('OLLAMA_URL', 'http://localhost:11434')
+        # Ollama 伺服器位址 (預設改為遠端 PrimeHub URL)
+        # 若需改回本地或其他部署，請設定環境變數 OLLAMA_URL
+        self.ollama_url = os.getenv('OLLAMA_URL', 'https://primehub.aic.ncku.edu.tw/console/apps/ollama-0-13-0-i1oyy')
         self.ollama_model = os.getenv('OLLAMA_MODEL', 'llava')  # 推薦使用 llava 視覺模型
         self.ollama_enabled = os.getenv('OLLAMA_ENABLED', 'true').lower() == 'true'
         

@@ -8,3 +8,4 @@ requests==2.31.0
 dashscope>=1.12.0  # Qwen
 openai>=1.3.0      # GPT-4V
 anthropic>=0.7.0   # Claude
+langchain>=0.0.300
