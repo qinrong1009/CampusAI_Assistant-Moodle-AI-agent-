@@ -13,6 +13,7 @@ from PIL import Image
 import json
 from datetime import datetime
 import requests
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -21,20 +22,22 @@ class AIModel:
     
     def __init__(self):
         """初始化 AI 模型"""
-        # Ollama 伺服器位址 (預設改為遠端 PrimeHub URL)
-        # 若需改回本地或其他部署，請設定環境變數 OLLAMA_URL
+        # Ollama 伺服器位址（強制使用遠端 server；預設為 PrimeHub URL）
+        # 若要改成其他遠端 Ollama，請設定環境變數 OLLAMA_URL
         self.ollama_url = os.getenv('OLLAMA_URL', 'https://primehub.aic.ncku.edu.tw/console/apps/ollama-0-13-0-i1oyy')
-        self.ollama_model = os.getenv('OLLAMA_MODEL', 'llava')  # 推薦使用 llava 視覺模型
-        self.ollama_enabled = os.getenv('OLLAMA_ENABLED', 'true').lower() == 'true'
-        
+        # 運行時預設模型（server-side default）
+        self.ollama_model = os.getenv('OLLAMA_MODEL', 'llama3.2')
+        # 強制啟用遠端 Ollama 路徑（不保留本地 serve 分支）
+        self.ollama_enabled = True
+
         # 雲端 API 配置
         self.qwen_api_key = os.getenv('QWEN_API_KEY')
         self.openai_api_key = os.getenv('OPENAI_API_KEY')
         self.claude_api_key = os.getenv('CLAUDE_API_KEY')
-        
+
         # 初始化各個模型的客戶端
         self._init_clients()
-        
+
         # 檢查 Ollama 連接
         self._check_ollama_connection()
     
@@ -82,7 +85,7 @@ class AIModel:
         Args:
             question: 使用者的問題
             screenshot: base64 編碼的截圖
-            model_type: 使用的模型名稱 (llava/qwen2.5/qwen/gpt/claude)
+            model_type: 使用的模型名稱 (llava/qwen2.5vl/qwen/gpt/claude)
         
         Returns:
             AI 的回應文本
@@ -94,8 +97,8 @@ class AIModel:
             image_data = base64.b64decode(screenshot.split(',')[1] if ',' in screenshot else screenshot)
             
             # 根據模型類型調用相應的方法
-            if model_type in ['llava', 'llava:34b', 'bakllava', 'qwen2.5', 'qwen:7b', 'qwen:7b-vision', 'qwen2.5vl:7b', 'qwen2.5-vl', 'qwen-vl', 'qwen-vl-chat']:
-                # 所有本地 Ollama 模型
+            # 僅允許使用遠端提供的五個模型（由 server 端管理）
+            if model_type in ['llava', 'llama3.2', 'qwen2.5vl', 'qwen3-vl', 'gemma3', 'llama4']:
                 return self._query_ollama(question, image_data, model_type)
             elif model_type == 'gpt':
                 return self._query_gpt(question, image_data)
@@ -114,21 +117,16 @@ class AIModel:
     
     def _query_ollama(self, question: str, image_data: bytes, model_name: str = None) -> str:
         """
-        使用 Ollama 本地模型回應 (推薦!)
-        
-        支持的模型:
-        - llava - 視覺語言模型 (推薦用於圖片分析)
-        - qwen2.5 - Qwen 開源版本 (多功能)
-        - qwen:7b - Qwen 7B 版本
-        - bakllava - 輕量視覺模型
-        
-        無需 API 密鑰，完全本地運行!
+        使用遠端 Ollama 服務回應。
+
+        注意：本系統僅會向遠端 Ollama 伺服器發出請求（不再支援本地 ollama serve），
+        並且後端僅公開配置的模型選項給前端使用。
         """
         try:
             if not self.ollama_enabled:
                 return "Ollama 未配置或無法連接"
             
-            # 使用指定的模型或默認模型
+            # 使用指定的模型或運行時伺服器預設模型
             model = model_name or self.ollama_model
             
             # 編碼圖片為 base64
@@ -155,23 +153,43 @@ class AIModel:
             # 調用 Ollama API
             logger.info(f'調用 Ollama 模型: {model} ({self.ollama_url})')
             
-            # 檢查是否是視覺模型（需要圖片）還是文本模型
-            is_vision_model = model.lower() in ['llava', 'bakllava', 'qwen:7b-vision', 'qwen2.5vl:7b', 'qwen2.5-vl', 'qwen-vl', 'qwen-vl-chat']
+            # 檢查是否是視覺模型（需要圖片）
+            # 我們將以下模型視為視覺+語言（Vision+Language）模型
+            is_vision_model = model.lower() in ['llava', 'qwen2.5vl', 'qwen3-vl', 'gemma3', 'llama3.2', 'llama4']
             
             if is_vision_model:
                 # 視覺模型：發送圖片和文字
+                start = time.time()
+                # log debug: whether image is present and its approximate size
+                try:
+                    logger.info(f'Ollama request -> model={model} is_vision={is_vision_model} images_len={len(image_base64) if image_base64 else 0}')
+                except Exception:
+                    pass
+
+                # 當為視覺模型時，強化 prompt，明確指示模型使用 images 欄位並描述圖片內容
+                vision_instruction = (
+                    "注意：此請求包含一張截圖（已放在 images 欄位）。\n"
+                    "請優先使用圖片資訊回答，逐項描述圖片中可見的內容（例如文字、按鈕、標題、圖示、位置關係等），"
+                    "並只在無法從圖片判斷時才使用文字上下文。\n"
+                )
+
+                payload = {
+                    'model': model,
+                    'prompt': f"{vision_instruction}{system_prompt}\n\n用戶問題: {question}",
+                    'stream': False,
+                    'images': [image_base64]
+                }
+                logger.debug(f'Ollama payload keys: {list(payload.keys())}')
+
                 response = requests.post(
                     f'{self.ollama_url}/api/generate',
-                    json={
-                        'model': model,
-                        'prompt': f"{system_prompt}\n\n用戶問題: {question}",
-                        'stream': False,
-                        'images': [image_base64]  # 發送 base64 編碼的圖片
-                    },
+                    json=payload,
                     timeout=120  # 給 AI 足夠的時間思考
                 )
+                elapsed = time.time() - start
             else:
                 # 文本模型（如 Qwen2.5）：只發送文字
+                start = time.time()
                 response = requests.post(
                     f'{self.ollama_url}/api/generate',
                     json={
@@ -181,22 +199,81 @@ class AIModel:
                     },
                     timeout=120  # 給 AI 足夠的時間思考
                 )
-            
+                elapsed = time.time() - start
+
+            # 處理回應；若 model not found (404)，嘗試用不含 tag 的 model 名稱重試（例如 qwen2.5vl:7b -> qwen2.5vl）
             if response.status_code == 200:
                 result = response.json()
                 answer = result.get('response', '').strip()
                 logger.info('✅ Ollama 回應成功')
+                # 記錄 LLM 回應耗時
+                try:
+                    logger.info(f'LLM 回應時間: {elapsed:.2f}s')
+                except Exception:
+                    pass
                 return answer if answer else "無法生成回應，請重試"
-            else:
-                logger.error(f'Ollama API 錯誤: {response.status_code} - {response.text}')
-                return f"Ollama 回應失敗 ({response.status_code}): {response.text[:200]}"
+
+            # 若為 404 且錯誤訊息指出 model not found，嘗試 fallback
+            try:
+                body = response.json()
+            except Exception:
+                body = None
+
+            if response.status_code == 404 and body and isinstance(body, dict) and 'error' in body and 'model' in str(body.get('error')).lower() and ':' in model:
+                fallback_model = model.split(':')[0]
+                logger.warning(f"Ollama 回傳 model not found，嘗試 fallback model={fallback_model}")
+
+                # 再次發送請求，但使用 fallback_model
+                if is_vision_model:
+                    start2 = time.time()
+                    response2 = requests.post(
+                        f'{self.ollama_url}/api/generate',
+                        json={
+                            'model': fallback_model,
+                            'prompt': f"{system_prompt}\n\n用戶問題: {question}",
+                            'stream': False,
+                            'images': [image_base64]
+                        },
+                        timeout=120
+                    )
+                    elapsed2 = time.time() - start2
+                else:
+                    start2 = time.time()
+                    response2 = requests.post(
+                        f'{self.ollama_url}/api/generate',
+                        json={
+                            'model': fallback_model,
+                            'prompt': f"{system_prompt}\n\n用戶問題: {question}",
+                            'stream': False
+                        },
+                        timeout=120
+                    )
+                    elapsed2 = time.time() - start2
+
+                if response2.status_code == 200:
+                    result = response2.json()
+                    answer = result.get('response', '').strip()
+                    logger.info(f'✅ Ollama 回應成功 (fallback model={fallback_model})')
+                    # 記錄 fallback LLM 回應耗時
+                    try:
+                        logger.info(f'LLM 回應時間 (fallback): {elapsed2:.2f}s')
+                    except Exception:
+                        pass
+                    return answer if answer else "無法生成回應，請重試"
+                else:
+                    logger.error(f'Ollama API (fallback) 錯誤: {response2.status_code} - {response2.text}')
+                    return f"Ollama 回應失敗 ({response2.status_code}): {response2.text[:200]}"
+
+            # 其他非 200 錯誤
+            logger.error(f'Ollama API 錯誤: {response.status_code} - {response.text}')
+            return f"Ollama 回應失敗 ({response.status_code}): {response.text[:200]}"
                 
         except requests.exceptions.Timeout:
             logger.error('Ollama 請求超時')
             return "Ollama 處理超時，請嘗試更簡單的圖片或問題"
         except requests.exceptions.ConnectionError:
-            logger.error(f'無法連接到 Ollama: {self.ollama_url}')
-            return f"無法連接到 Ollama 服務 ({self.ollama_url})\n\n💡 提示: 確保 Ollama 正在運行:\n  ollama serve"
+                logger.error(f'無法連接到 Ollama: {self.ollama_url}')
+                return f"無法連接到遠端 Ollama 服務 ({self.ollama_url})。請確認該遠端服務可用並且 URL 正確。"
         except Exception as e:
             logger.error(f'Ollama 查詢失敗: {str(e)}')
             return f"Ollama 查詢出錯: {str(e)}"
@@ -347,39 +424,49 @@ class AIModel:
     
     def get_available_models(self) -> dict:
         """獲取可用的模型列表"""
+        # 只回傳遠端伺服器上允許的五個模型（與擴展一致）
         models = {
+            'qwen2.5vl': {
+                'name': 'Qwen 2.5VL (遠端)',
+                'status': 'available',
+                'description': 'Qwen 2.5VL 視覺/文本模型（遠端 Ollama）',
+                'location': 'remote',
+                'url': self.ollama_url
+            },
             'llava': {
-                'name': '🖥️ LLaVA (本地 Ollama)',
-                'status': 'available' if self.ollama_enabled else 'unconfigured',
-                'description': '視覺模型 - 適合圖片分析',
-                'location': 'local',
-                'url': self.ollama_url if self.ollama_enabled else '未配置'
+                'name': 'LLaVA (遠端)',
+                'status': 'available',
+                'description': '視覺語言模型（遠端 Ollama）',
+                'location': 'remote',
+                'url': self.ollama_url
             },
-            'qwen2.5': {
-                'name': '🖥️ Qwen 2.5 (本地 Ollama)',
-                'status': 'available' if self.ollama_enabled else 'unconfigured',
-                'description': '多功能模型 - 適合文本分析',
-                'location': 'local',
-                'url': self.ollama_url if self.ollama_enabled else '未配置'
+            'llama3.2': {
+                'name': 'LLaMA 3.2 (遠端)',
+                'status': 'available',
+                'description': '文本生成模型（遠端 Ollama）',
+                'location': 'remote',
+                'url': self.ollama_url
             },
-            'bakllava': {
-                'name': '🖥️ BakLLaVA (本地 Ollama)',
-                'status': 'available' if self.ollama_enabled else 'unconfigured',
-                'description': '輕量視覺模型 - 快速推理',
-                'location': 'local',
-                'url': self.ollama_url if self.ollama_enabled else '未配置'
+            'qwen3-vl': {
+                'name': 'Qwen 3 VL (遠端)',
+                'status': 'available',
+                'description': 'Qwen 第三代視覺語言模型（遠端 Ollama）',
+                'location': 'remote',
+                'url': self.ollama_url
             },
-            'gpt': {
-                'name': '☁️ GPT-4V (雲端)',
-                'status': 'available' if self.openai_api_key else 'unconfigured',
-                'description': 'OpenAI - 需要 API 密鑰',
-                'location': 'cloud'
+            'gemma3': {
+                'name': 'Gemma 3 (遠端)',
+                'status': 'available',
+                'description': 'Gemma 系列模型（遠端 Ollama）',
+                'location': 'remote',
+                'url': self.ollama_url
             },
-            'claude': {
-                'name': '☁️ Claude 3 Vision (雲端)',
-                'status': 'available' if self.claude_api_key else 'unconfigured',
-                'description': 'Anthropic - 需要 API 密鑰',
-                'location': 'cloud'
+            'llama4': {
+                'name': 'LLaMA 4 (遠端)',
+                'status': 'available',
+                'description': 'LLaMA 4 - 視覺+語言模型（遠端 Ollama）',
+                'location': 'remote',
+                'url': self.ollama_url
             }
         }
         return models

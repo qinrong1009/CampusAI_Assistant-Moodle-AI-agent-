@@ -50,6 +50,15 @@ def ask_ai():
         
         # 記錄請求
         logger.info(f'接收問題: {question[:50]}... 使用模型: {model}')
+        # 記錄是否收到截圖與簡短預覽（避免在日誌中打出完整 base64）
+        try:
+            if screenshot:
+                preview = (screenshot[:80] + '...') if len(screenshot) > 80 else screenshot
+                logger.info(f'[api] 收到 screenshot 長度={len(screenshot)} preview={preview}')
+            else:
+                logger.info('[api] 未收到 screenshot')
+        except Exception as e:
+            logger.warning(f'[api] 無法記錄 screenshot 資訊: {e}')
         
         # 🎯 使用輕量級檢索器取得相關知識片段
         retriever = get_retriever()
@@ -138,6 +147,29 @@ def get_available_models():
             'error': '獲取模型列表失敗',
             'timestamp': datetime.now().isoformat()
         }), 500
+
+
+@bp.route('/set_model', methods=['POST'])
+def set_model():
+    """在運行時設置全局預設模型（會更新 server-side 的 default model）。"""
+    try:
+        data = request.get_json() or {}
+        model = data.get('model')
+        if not model:
+            return jsonify({'error': 'model required'}), 400
+
+        # 驗證模型是否在可用清單中
+        available = g.ai_model.get_available_models()
+        if model not in available:
+            return jsonify({'error': 'model not recognized', 'available': list(available.keys())}), 400
+
+        # 設置全局預設模型
+        g.ai_model.ollama_model = model
+        logger.info(f'全局預設模型已更新為: {model}')
+        return jsonify({'status': 'success', 'model': model}), 200
+    except Exception as e:
+        logger.error(f'設置模型失敗: {e}')
+        return jsonify({'error': '設置模型失敗'}), 500
 
 @bp.route('/test', methods=['GET'])
 def test_endpoint():
